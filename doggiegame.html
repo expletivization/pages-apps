@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Doggie Chase!</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1a2e0a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Courier New', Courier, monospace;
+      color: white;
+      user-select: none;
+      -webkit-user-select: none;
+      padding: 16px 16px 24px;
+    }
+
+    .hiscore {
+      font-size: 0.8rem;
+      color: #aada8a;
+      margin-bottom: 8px;
+      letter-spacing: 0.05em;
+    }
+
+    #game {
+      border: 3px solid #5a8a3f;
+      border-radius: 10px;
+      display: block;
+      touch-action: none;
+    }
+
+    .dpad {
+      display: grid;
+      grid-template-areas: ". up ." "left . right" ". down .";
+      grid-template-columns: 60px 60px 60px;
+      grid-template-rows: 60px 60px 60px;
+      gap: 5px;
+      margin-top: 18px;
+    }
+
+    .dpad button {
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 10px;
+      color: white;
+      font-size: 1.3rem;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.1s;
+    }
+
+    .dpad button:active,
+    .dpad button.pressed { background: rgba(255,255,255,0.3); }
+
+    .dpad .up    { grid-area: up; }
+    .dpad .left  { grid-area: left; }
+    .dpad .right { grid-area: right; }
+    .dpad .down  { grid-area: down; }
+  </style>
+</head>
+<body>
+  <div class="hiscore">Best: <span id="hiScore">0</span>s</div>
+  <canvas id="game"></canvas>
+  <div class="dpad" id="dpad">
+    <button class="up">▲</button>
+    <button class="left">◀</button>
+    <button class="right">▶</button>
+    <button class="down">▼</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx    = canvas.getContext('2d');
+
+    const SIZE = Math.min(400, window.innerWidth - 32);
+    canvas.width  = SIZE;
+    canvas.height = SIZE;
+
+    const EM = Math.floor(SIZE / 11);
+
+    let keys     = {};
+    let state    = 'start';
+    let score    = 0;
+    let startTime = 0;
+    let hiScore  = parseInt(localStorage.getItem('doggie-hiscore') || '0');
+    document.getElementById('hiScore').textContent = hiScore;
+
+    let boy, dog, paws, boneTrap;
+
+    // Static grass patches — generated once
+    const patches = Array.from({ length: 35 }, () => ({
+      x: Math.random() * SIZE,
+      y: Math.random() * SIZE,
+      rx: 10 + Math.random() * 18,
+      ry: 5  + Math.random() * 10,
+      a: Math.random() * Math.PI,
+      c: `hsl(${95 + Math.random() * 35}, ${45 + Math.random() * 20}%, ${22 + Math.random() * 14}%)`
+    }));
+
+    function init() {
+      boy  = { x: SIZE / 2, y: SIZE / 2, facingRight: true };
+      dog  = { x: SIZE * 0.1, y: SIZE * 0.1, facingRight: true, speed: SIZE * 0.0028 };
+      paws = [];
+      score     = 0;
+      startTime = Date.now();
+      state     = 'playing';
+    }
+
+    function drawBg() {
+      ctx.fillStyle = '#3d6e2c';
+      ctx.fillRect(0, 0, SIZE, SIZE);
+      for (const p of patches) {
+        ctx.fillStyle = p.c;
+        ctx.beginPath();
+        ctx.ellipse(p.x, p.y, p.rx, p.ry, p.a, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function emoji(e, x, y, size, flipX) {
+      ctx.save();
+      ctx.translate(x, y);
+      if (flipX) ctx.scale(-1, 1);
+      ctx.font = `${size}px serif`;
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(e, 0, 0);
+      ctx.restore();
+    }
+
+    function update() {
+      if (state !== 'playing') return;
+
+      const elapsed  = (Date.now() - startTime) / 1000;
+      score = Math.floor(elapsed);
+
+      // Boy movement
+      const BSPEED = SIZE * 0.0058;
+      let bvx = 0, bvy = 0;
+      if (keys['ArrowLeft']  || keys['a'] || keys['left'])  bvx -= BSPEED;
+      if (keys['ArrowRight'] || keys['d'] || keys['right']) bvx += BSPEED;
+      if (keys['ArrowUp']    || keys['w'] || keys['up'])    bvy -= BSPEED;
+      if (keys['ArrowDown']  || keys['s'] || keys['down'])  bvy += BSPEED;
+
+      // Normalize diagonal speed
+      if (bvx && bvy) { bvx *= 0.707; bvy *= 0.707; }
+
+      if (bvx !== 0) boy.facingRight = bvx > 0;
+
+      boy.x = Math.max(EM * 0.6, Math.min(SIZE - EM * 0.6, boy.x + bvx));
+      boy.y = Math.max(EM * 0.6, Math.min(SIZE - EM * 0.6, boy.y + bvy));
+
+      // Dog chases — slowly accelerates over time
+      const dogSpeed = dog.speed + elapsed * 0.00012 * SIZE;
+      const dx = boy.x - dog.x;
+      const dy = boy.y - dog.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist > 1) {
+        dog.x += (dx / dist) * dogSpeed;
+        dog.y += (dy / dist) * dogSpeed;
+        dog.facingRight = dx > 0;
+      }
+
+      // Paw print trail
+      if (Math.random() < 0.18) {
+        paws.push({ x: dog.x + (Math.random()-0.5)*6, y: dog.y + (Math.random()-0.5)*6, age: 0 });
+      }
+      paws = paws.filter(p => { p.age++; return p.age < 50; });
+
+      // Caught!
+      if (dist < EM * 0.85) {
+        state = 'over';
+        if (score > hiScore) {
+          hiScore = score;
+          localStorage.setItem('doggie-hiscore', hiScore);
+          document.getElementById('hiScore').textContent = hiScore;
+        }
+      }
+    }
+
+    function draw() {
+      drawBg();
+
+      if (state === 'start') {
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        ctx.fillRect(0, 0, SIZE, SIZE);
+
+        const s = SIZE / 400;
+        ctx.textAlign = 'center';
+
+        ctx.font = `bold ${Math.round(38 * s)}px serif`;
+        ctx.fillStyle = 'white';
+        ctx.fillText('🐕  Doggie Chase!', SIZE/2, SIZE * 0.30);
+
+        ctx.font = `${Math.round(18 * s)}px monospace`;
+        ctx.fillStyle = '#d4f0a0';
+        ctx.fillText('Run from the dog as long', SIZE/2, SIZE * 0.46);
+        ctx.fillText('as you can!', SIZE/2, SIZE * 0.54);
+
+        ctx.font = `${Math.round(15 * s)}px monospace`;
+        ctx.fillStyle = '#aaa';
+        ctx.fillText('Arrow keys / WASD / D-pad', SIZE/2, SIZE * 0.65);
+
+        ctx.font = `bold ${Math.round(17 * s)}px monospace`;
+        ctx.fillStyle = '#ffe066';
+        ctx.fillText('▶  Tap or press any key', SIZE/2, SIZE * 0.78);
+        return;
+      }
+
+      // Paw prints
+      for (const p of paws) {
+        ctx.globalAlpha = (1 - p.age / 50) * 0.45;
+        ctx.font = `${Math.round(EM * 0.38)}px serif`;
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🐾', p.x, p.y);
+      }
+      ctx.globalAlpha = 1;
+
+      // Characters
+      emoji('🧒', boy.x, boy.y, EM, !boy.facingRight);
+      emoji('🐕', dog.x, dog.y, EM, !dog.facingRight);
+
+      // HUD — score
+      const s = SIZE / 400;
+      ctx.textAlign  = 'left';
+      ctx.font       = `bold ${Math.round(18 * s)}px monospace`;
+      ctx.shadowColor = 'black';
+      ctx.shadowBlur  = 5;
+      ctx.fillStyle   = 'white';
+      ctx.fillText(`⏱ ${score}s`, 10, 28 * s + 4);
+      ctx.shadowBlur  = 0;
+
+      if (state === 'over') {
+        ctx.fillStyle = 'rgba(0,0,0,0.65)';
+        ctx.fillRect(0, 0, SIZE, SIZE);
+        ctx.textAlign = 'center';
+
+        ctx.font = `bold ${Math.round(46 * s)}px serif`;
+        ctx.fillStyle = '#ff6b6b';
+        ctx.shadowColor = 'black'; ctx.shadowBlur = 8;
+        ctx.fillText('🐕 CAUGHT!', SIZE/2, SIZE * 0.36);
+        ctx.shadowBlur = 0;
+
+        ctx.font = `${Math.round(20 * s)}px monospace`;
+        ctx.fillStyle = 'white';
+        ctx.fillText(`Survived: ${score}s`, SIZE/2, SIZE * 0.50);
+
+        if (score >= hiScore) {
+          ctx.font = `bold ${Math.round(18 * s)}px monospace`;
+          ctx.fillStyle = '#ffe066';
+          ctx.fillText('🏆 New Best!', SIZE/2, SIZE * 0.60);
+        }
+
+        ctx.font = `${Math.round(16 * s)}px monospace`;
+        ctx.fillStyle = '#ccc';
+        ctx.fillText('Tap or press any key to retry', SIZE/2, SIZE * 0.73);
+      }
+    }
+
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    // Keyboard
+    document.addEventListener('keydown', e => {
+      if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+      keys[e.key] = true;
+      if (state !== 'playing') init();
+    });
+    document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+    // Canvas tap
+    canvas.addEventListener('click', () => {
+      if (state !== 'playing') init();
+    });
+
+    // D-pad
+    document.querySelectorAll('.dpad button').forEach(btn => {
+      const dir = btn.className; // 'up' | 'down' | 'left' | 'right'
+
+      const press   = e => { e.preventDefault(); keys[dir] = true;  btn.classList.add('pressed'); };
+      const release = e => { e.preventDefault(); keys[dir] = false; btn.classList.remove('pressed'); if (state !== 'playing') init(); };
+
+      btn.addEventListener('touchstart', press,   { passive: false });
+      btn.addEventListener('touchend',   release, { passive: false });
+      btn.addEventListener('touchcancel',release, { passive: false });
+      btn.addEventListener('mousedown',  press);
+      btn.addEventListener('mouseup',    release);
+      btn.addEventListener('mouseleave', release);
+    });
+
+    loop();
+  </script>
+</body>
+</html>
