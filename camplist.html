@@ -339,6 +339,10 @@ function buildSection(section) {
   const done    = section.items.filter(i => i.checked).length;
   const pct     = total ? (done / total * 100).toFixed(1) : 0;
 
+  // Sort for display: unchecked first, checked sink to bottom
+  // Stable sort preserves original order within each group
+  const sorted = [...section.items].sort((a, b) => a.checked - b.checked);
+
   const el = document.createElement('div');
   el.className = 'section';
   el.innerHTML = `
@@ -353,7 +357,7 @@ function buildSection(section) {
       <div class="progress-fill" style="width:${pct}%"></div>
     </div>
     <div class="items-list">
-      ${section.items.map(item => itemHtml(section.id, item)).join('')}
+      ${sorted.map(item => itemHtml(section.id, item)).join('')}
     </div>
     <div class="add-row">
       <input class="add-input" type="text" placeholder="Add item…"
