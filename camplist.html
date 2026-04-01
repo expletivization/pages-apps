@@ -244,15 +244,6 @@
 <script>
 const DEFAULTS = [
   {
-    id: 'dogs',
-    title: 'Dogs',
-    items: [
-      { id: 'dg1', text: 'Food',      checked: false },
-      { id: 'dg2', text: 'Harnesses', checked: true  },
-      { id: 'dg3', text: 'Beds',      checked: false },
-    ]
-  },
-  {
     id: 'packing',
     title: 'Camping Packing List',
     items: [
@@ -261,56 +252,59 @@ const DEFAULTS = [
       { id: 'pk03', text: 'Floaties',        checked: false },
       { id: 'pk04', text: 'Vacuum',          checked: false },
       { id: 'pk05', text: 'Cash',            checked: false },
-      { id: 'pk06', text: 'Moving blanket',  checked: true  },
+      { id: 'pk06', text: 'Moving blanket',  checked: false },
       { id: 'pk07', text: 'Dog crate',       checked: false },
       { id: 'pk08', text: 'Inflator',        checked: false },
-      { id: 'pk09', text: 'String lights',   checked: true  },
+      { id: 'pk09', text: 'String lights',   checked: false },
       { id: 'pk10', text: 'Lantern',         checked: false },
-      { id: 'pk11', text: 'Weather Radio',   checked: true  },
+      { id: 'pk11', text: 'Weather Radio',   checked: false },
       { id: 'pk12', text: 'Cade bike',       checked: false },
       { id: 'pk13', text: 'Headlamp',        checked: false },
       { id: 'pk14', text: 'Canopy',          checked: false },
       { id: 'pk15', text: 'Blower',          checked: false },
-      { id: 'pk16', text: 'Torque Wrench',   checked: true  },
+      { id: 'pk16', text: 'Torque Wrench',   checked: false },
       { id: 'pk17', text: 'Water jugs',      checked: false },
       { id: 'pk18', text: 'Grill',           checked: false },
       { id: 'pk19', text: 'Chairs',          checked: false },
-      { id: 'pk20', text: 'Pack n Play',     checked: true  },
+      { id: 'pk20', text: 'Pack n Play',     checked: false },
       { id: 'pk21', text: 'Tables',          checked: false },
+      { id: 'pk22', text: 'Dog food',        checked: false },
+      { id: 'pk23', text: 'Dog harnesses',   checked: false },
+      { id: 'pk24', text: 'Dog beds',        checked: false },
     ]
   },
   {
     id: 'predrive',
     title: 'Pre-drive Checklist',
     items: [
-      { id: 'pd01', text: 'Step up',                      checked: false },
-      { id: 'pd02', text: 'Compartments locked',          checked: false },
-      { id: 'pd03', text: 'Doors locked',                 checked: false },
-      { id: 'pd04', text: 'Truck engine oil checked',     checked: true  },
-      { id: 'pd05', text: 'Tire pressure checked — 65 psi', checked: true },
-      { id: 'pd06', text: 'Water pump off',               checked: false },
-      { id: 'pd07', text: 'Turn off laundry room sink',   checked: true  },
-      { id: 'pd08', text: 'Shower door secure',           checked: false },
-      { id: 'pd09', text: 'Lug nut torque checked',       checked: false },
-      { id: 'pd10', text: 'Shower items secured',         checked: false },
-      { id: 'pd11', text: 'Cutting boards secured',       checked: false },
-      { id: 'pd12', text: 'Roof vents closed',            checked: false },
-      { id: 'pd13', text: 'Microwave plate secured',      checked: false },
-      { id: 'pd14', text: 'Bathroom light secured',       checked: false },
-      { id: 'pd15', text: 'Trash cans emptied and secured', checked: true },
-      { id: 'pd16', text: 'Rock guards tightened',        checked: false },
-      { id: 'pd17', text: 'Awning latched',               checked: false },
-      { id: 'pd18', text: 'Propane tanks off',            checked: false },
-      { id: 'pd19', text: 'Water tanks',                  checked: false },
-      { id: 'pd20', text: 'Hitch lock removed',           checked: false },
-      { id: 'pd21', text: 'Wheel lock removed',           checked: false },
-      { id: 'pd22', text: 'Stabilizers up',               checked: false },
-      { id: 'pd23', text: 'Open blinds',                  checked: false },
+      { id: 'pd01', text: 'Step up',                        checked: false },
+      { id: 'pd02', text: 'Compartments locked',            checked: false },
+      { id: 'pd03', text: 'Doors locked',                   checked: false },
+      { id: 'pd04', text: 'Truck engine oil checked',       checked: false },
+      { id: 'pd05', text: 'Tire pressure checked — 65 psi', checked: false },
+      { id: 'pd06', text: 'Water pump off',                 checked: false },
+      { id: 'pd07', text: 'Turn off laundry room sink',     checked: false },
+      { id: 'pd08', text: 'Shower door secure',             checked: false },
+      { id: 'pd09', text: 'Lug nut torque checked',         checked: false },
+      { id: 'pd10', text: 'Shower items secured',           checked: false },
+      { id: 'pd11', text: 'Cutting boards secured',         checked: false },
+      { id: 'pd12', text: 'Roof vents closed',              checked: false },
+      { id: 'pd13', text: 'Microwave plate secured',        checked: false },
+      { id: 'pd14', text: 'Bathroom light secured',         checked: false },
+      { id: 'pd15', text: 'Trash cans emptied and secured', checked: false },
+      { id: 'pd16', text: 'Rock guards tightened',          checked: false },
+      { id: 'pd17', text: 'Awning latched',                 checked: false },
+      { id: 'pd18', text: 'Propane tanks off',              checked: false },
+      { id: 'pd19', text: 'Water tanks',                    checked: false },
+      { id: 'pd20', text: 'Hitch lock removed',             checked: false },
+      { id: 'pd21', text: 'Wheel lock removed',             checked: false },
+      { id: 'pd22', text: 'Stabilizers up',                 checked: false },
+      { id: 'pd23', text: 'Open blinds',                    checked: false },
     ]
   }
 ];
 
-const KEY = 'airstream-checklist-v2';
+const KEY = 'airstream-checklist-v3';
 
 function load() {
   try {
