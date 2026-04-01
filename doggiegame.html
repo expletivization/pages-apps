@@ -18,13 +18,13 @@
       color: white;
       user-select: none;
       -webkit-user-select: none;
-      padding: 16px 16px 24px;
+      padding: 12px 12px 20px;
     }
 
     .hiscore {
       font-size: 0.8rem;
       color: #aada8a;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       letter-spacing: 0.05em;
     }
 
@@ -41,7 +41,7 @@
       grid-template-columns: 60px 60px 60px;
       grid-template-rows: 60px 60px 60px;
       gap: 5px;
-      margin-top: 18px;
+      margin-top: 14px;
     }
 
     .dpad button {
@@ -52,11 +52,10 @@
       font-size: 1.3rem;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
-      transition: background 0.1s;
     }
 
     .dpad button:active,
-    .dpad button.pressed { background: rgba(255,255,255,0.3); }
+    .dpad button.pressed { background: rgba(255,255,255,0.32); }
 
     .dpad .up    { grid-area: up; }
     .dpad .left  { grid-area: left; }
@@ -78,52 +77,222 @@
     const canvas = document.getElementById('game');
     const ctx    = canvas.getContext('2d');
 
-    const SIZE = Math.min(400, window.innerWidth - 32);
-    canvas.width  = SIZE;
-    canvas.height = SIZE;
+    // Bigger, non-square canvas
+    const W = Math.min(640, window.innerWidth  - 20);
+    const H = Math.min(480, window.innerHeight - 240);
+    canvas.width  = W;
+    canvas.height = H;
 
-    const EM = Math.floor(SIZE / 11);
+    const EM = Math.floor(Math.min(W, H) / 13);  // emoji render size
 
-    let keys     = {};
-    let state    = 'start';
-    let score    = 0;
+    // Power-up config
+    const POWERUPS = [
+      { type: 'bike',      emoji: '🚲', mult: 2.0, dur: 6000, color: '#4fc3f7', label: '2× SPEED' },
+      { type: 'lightning', emoji: '⚡', mult: 3.0, dur: 3500, color: '#ffe066', label: '3× SPEED' },
+    ];
+    const POWERUP_INTERVAL = 8000;  // ms between spawns
+    const OBS_COUNT        = 7;
+
+    let keys      = {};
+    let state     = 'start';
+    let score     = 0;
     let startTime = 0;
-    let hiScore  = parseInt(localStorage.getItem('doggie-hiscore') || '0');
+    let hiScore   = parseInt(localStorage.getItem('doggie-hiscore') || '0');
     document.getElementById('hiScore').textContent = hiScore;
 
-    let boy, dog, paws, boneTrap;
+    let boy, dog, paws, obstacles, powerups, nextPowerupAt;
 
-    // Static grass patches — generated once
-    const patches = Array.from({ length: 35 }, () => ({
-      x: Math.random() * SIZE,
-      y: Math.random() * SIZE,
-      rx: 10 + Math.random() * 18,
+    // Static grass patches — generated once, fixed for all rounds
+    const patches = Array.from({ length: 45 }, () => ({
+      x:  Math.random() * W,
+      y:  Math.random() * H,
+      rx: 10 + Math.random() * 20,
       ry: 5  + Math.random() * 10,
-      a: Math.random() * Math.PI,
-      c: `hsl(${95 + Math.random() * 35}, ${45 + Math.random() * 20}%, ${22 + Math.random() * 14}%)`
+      a:  Math.random() * Math.PI,
+      c:  `hsl(${95 + Math.random()*35}, ${45 + Math.random()*20}%, ${22 + Math.random()*14}%)`
     }));
 
-    function init() {
-      boy  = { x: SIZE / 2, y: SIZE / 2, facingRight: true };
-      dog  = { x: SIZE * 0.1, y: SIZE * 0.1, facingRight: true, speed: SIZE * 0.0028 };
-      paws = [];
-      score     = 0;
-      startTime = Date.now();
-      state     = 'playing';
+    // ── Obstacle generation ─────────────────────────────────────────────────
+    function makeObstacles() {
+      const obs = [];
+      const cx = W / 2, cy = H / 2;
+      const clearR = Math.min(W, H) * 0.22;   // keep centre clear for spawn
+
+      for (let tries = 0; tries < OBS_COUNT * 20 && obs.length < OBS_COUNT; tries++) {
+        const margin = EM;
+        const x = margin + Math.random() * (W - margin * 2);
+        const y = margin + Math.random() * (H - margin * 2);
+        const r = EM * (0.7 + Math.random() * 0.5);
+
+        // Not too close to centre spawn point
+        if (Math.hypot(x - cx, y - cy) < clearR + r) continue;
+        // Not too close to dog spawn (top-left corner)
+        if (Math.hypot(x - W * 0.1, y - H * 0.1) < clearR * 0.7) continue;
+
+        let ok = true;
+        for (const o of obs) {
+          if (Math.hypot(x - o.x, y - o.y) < r + o.r + EM) { ok = false; break; }
+        }
+        if (!ok) continue;
+
+        obs.push({ x, y, r, emoji: Math.random() < 0.6 ? '🌲' : '🪨' });
+      }
+      return obs;
     }
 
-    function drawBg() {
-      ctx.fillStyle = '#3d6e2c';
-      ctx.fillRect(0, 0, SIZE, SIZE);
-      for (const p of patches) {
-        ctx.fillStyle = p.c;
-        ctx.beginPath();
-        ctx.ellipse(p.x, p.y, p.rx, p.ry, p.a, 0, Math.PI * 2);
-        ctx.fill();
+    // ── Power-up spawning ───────────────────────────────────────────────────
+    function spawnPowerup() {
+      const active = powerups.filter(p => !p.gone).length;
+      if (active >= 2) return;
+
+      const cfg = POWERUPS[Math.floor(Math.random() * POWERUPS.length)];
+      for (let tries = 0; tries < 60; tries++) {
+        const margin = EM * 1.5;
+        const x = margin + Math.random() * (W - margin * 2);
+        const y = margin + Math.random() * (H - margin * 2);
+
+        let ok = true;
+        for (const o of obstacles) {
+          if (Math.hypot(x - o.x, y - o.y) < o.r + EM) { ok = false; break; }
+        }
+        // Don't spawn on top of player or too close to another powerup
+        if (Math.hypot(x - boy.x, y - boy.y) < EM * 2) ok = false;
+        for (const p of powerups) {
+          if (!p.gone && Math.hypot(x - p.x, y - p.y) < EM * 2) { ok = false; break; }
+        }
+        if (!ok) continue;
+
+        powerups.push({ x, y, ...cfg, gone: false, born: Date.now() });
+        break;
       }
     }
 
-    function emoji(e, x, y, size, flipX) {
+    // ── Circle vs circle collision push ────────────────────────────────────
+    function pushOutOfObstacles(entity, radius) {
+      for (const o of obstacles) {
+        const dx = entity.x - o.x, dy = entity.y - o.y;
+        const dist = Math.hypot(dx, dy);
+        const min  = radius + o.r;
+        if (dist < min && dist > 0.001) {
+          entity.x += (dx / dist) * (min - dist);
+          entity.y += (dy / dist) * (min - dist);
+        }
+      }
+    }
+
+    // ── init ────────────────────────────────────────────────────────────────
+    function init() {
+      obstacles     = makeObstacles();
+      powerups      = [];
+      nextPowerupAt = Date.now() + POWERUP_INTERVAL;
+      paws          = [];
+      score         = 0;
+      startTime     = Date.now();
+
+      boy = { x: W / 2, y: H / 2, facingRight: true, boostMult: 1, boostEnd: 0, boostColor: '#fff', boostLabel: '' };
+      dog = { x: W * 0.1, y: H * 0.1, facingRight: true, speed: Math.min(W, H) * 0.003 };
+
+      state = 'playing';
+    }
+
+    // ── update ──────────────────────────────────────────────────────────────
+    function update() {
+      if (state !== 'playing') return;
+
+      const now     = Date.now();
+      const elapsed = (now - startTime) / 1000;
+      score = Math.floor(elapsed);
+
+      // Spawn powerups on schedule
+      if (now >= nextPowerupAt) {
+        spawnPowerup();
+        nextPowerupAt = now + POWERUP_INTERVAL;
+      }
+
+      // ── Boy movement ───────────────────────────────────────────────────
+      const boost  = boy.boostEnd > now ? boy.boostMult : 1;
+      const BSPEED = Math.min(W, H) * 0.006 * boost;
+      let bvx = 0, bvy = 0;
+      if (keys['ArrowLeft']  || keys['a'] || keys['left'])  bvx -= BSPEED;
+      if (keys['ArrowRight'] || keys['d'] || keys['right']) bvx += BSPEED;
+      if (keys['ArrowUp']    || keys['w'] || keys['up'])    bvy -= BSPEED;
+      if (keys['ArrowDown']  || keys['s'] || keys['down'])  bvy += BSPEED;
+
+      if (bvx && bvy) { bvx *= 0.707; bvy *= 0.707; }
+      if (bvx !== 0) boy.facingRight = bvx > 0;
+
+      boy.x = Math.max(EM * 0.6, Math.min(W - EM * 0.6, boy.x + bvx));
+      boy.y = Math.max(EM * 0.6, Math.min(H - EM * 0.6, boy.y + bvy));
+      pushOutOfObstacles(boy, EM * 0.55);
+
+      // ── Collect powerups ───────────────────────────────────────────────
+      for (const pu of powerups) {
+        if (pu.gone) continue;
+        if (Math.hypot(boy.x - pu.x, boy.y - pu.y) < EM * 0.9) {
+          pu.gone       = true;
+          boy.boostMult  = pu.mult;
+          boy.boostEnd   = now + pu.dur;
+          boy.boostColor = pu.color;
+          boy.boostLabel = pu.label;
+        }
+      }
+      powerups = powerups.filter(p => !p.gone || p.gone); // keep all for simplicity, filter truly old ones
+      powerups = powerups.filter(p => !p.gone || (now - p.born) < 30000);
+
+      // ── Dog chases ─────────────────────────────────────────────────────
+      const dogSpeed = dog.speed + elapsed * 0.00010 * Math.min(W, H);
+      const tdx = boy.x - dog.x;
+      const tdy = boy.y - dog.y;
+      const dist = Math.hypot(tdx, tdy);
+
+      // Desired direction toward boy
+      let mvx = dist > 0 ? tdx / dist : 0;
+      let mvy = dist > 0 ? tdy / dist : 0;
+
+      // Obstacle avoidance steering: push direction away from nearby obstacles
+      for (const o of obstacles) {
+        const ox   = dog.x - o.x, oy = dog.y - o.y;
+        const od   = Math.hypot(ox, oy);
+        const zone = o.r + EM * 1.8;
+        if (od < zone && od > 0.001) {
+          const strength = (zone - od) / zone;
+          mvx += (ox / od) * strength * 2.2;
+          mvy += (oy / od) * strength * 2.2;
+        }
+      }
+
+      // Normalise and move
+      const ml = Math.hypot(mvx, mvy);
+      if (ml > 0) {
+        dog.x += (mvx / ml) * dogSpeed;
+        dog.y += (mvy / ml) * dogSpeed;
+      }
+      dog.facingRight = tdx > 0;
+
+      // Clamp dog to canvas + push out of obstacles
+      dog.x = Math.max(EM * 0.6, Math.min(W - EM * 0.6, dog.x));
+      dog.y = Math.max(EM * 0.6, Math.min(H - EM * 0.6, dog.y));
+      pushOutOfObstacles(dog, EM * 0.55);
+
+      // ── Paw trail ──────────────────────────────────────────────────────
+      if (Math.random() < 0.18) {
+        paws.push({ x: dog.x + (Math.random()-0.5)*6, y: dog.y + (Math.random()-0.5)*6, age: 0 });
+      }
+      paws = paws.filter(p => { p.age++; return p.age < 55; });
+
+      // ── Caught? ────────────────────────────────────────────────────────
+      if (dist < EM * 0.82) {
+        state = 'over';
+        if (score > hiScore) {
+          hiScore = score;
+          localStorage.setItem('doggie-hiscore', hiScore);
+          document.getElementById('hiScore').textContent = hiScore;
+        }
+      }
+    }
+
+    // ── Emoji helper ────────────────────────────────────────────────────────
+    function drawEmoji(e, x, y, size, flipX) {
       ctx.save();
       ctx.translate(x, y);
       if (flipX) ctx.scale(-1, 1);
@@ -134,169 +303,187 @@
       ctx.restore();
     }
 
-    function update() {
-      if (state !== 'playing') return;
-
-      const elapsed  = (Date.now() - startTime) / 1000;
-      score = Math.floor(elapsed);
-
-      // Boy movement
-      const BSPEED = SIZE * 0.0058;
-      let bvx = 0, bvy = 0;
-      if (keys['ArrowLeft']  || keys['a'] || keys['left'])  bvx -= BSPEED;
-      if (keys['ArrowRight'] || keys['d'] || keys['right']) bvx += BSPEED;
-      if (keys['ArrowUp']    || keys['w'] || keys['up'])    bvy -= BSPEED;
-      if (keys['ArrowDown']  || keys['s'] || keys['down'])  bvy += BSPEED;
-
-      // Normalize diagonal speed
-      if (bvx && bvy) { bvx *= 0.707; bvy *= 0.707; }
-
-      if (bvx !== 0) boy.facingRight = bvx > 0;
-
-      boy.x = Math.max(EM * 0.6, Math.min(SIZE - EM * 0.6, boy.x + bvx));
-      boy.y = Math.max(EM * 0.6, Math.min(SIZE - EM * 0.6, boy.y + bvy));
-
-      // Dog chases — slowly accelerates over time
-      const dogSpeed = dog.speed + elapsed * 0.00012 * SIZE;
-      const dx = boy.x - dog.x;
-      const dy = boy.y - dog.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (dist > 1) {
-        dog.x += (dx / dist) * dogSpeed;
-        dog.y += (dy / dist) * dogSpeed;
-        dog.facingRight = dx > 0;
-      }
-
-      // Paw print trail
-      if (Math.random() < 0.18) {
-        paws.push({ x: dog.x + (Math.random()-0.5)*6, y: dog.y + (Math.random()-0.5)*6, age: 0 });
-      }
-      paws = paws.filter(p => { p.age++; return p.age < 50; });
-
-      // Caught!
-      if (dist < EM * 0.85) {
-        state = 'over';
-        if (score > hiScore) {
-          hiScore = score;
-          localStorage.setItem('doggie-hiscore', hiScore);
-          document.getElementById('hiScore').textContent = hiScore;
-        }
-      }
-    }
-
+    // ── draw ────────────────────────────────────────────────────────────────
     function draw() {
-      drawBg();
+      // Background
+      ctx.fillStyle = '#3d6e2c';
+      ctx.fillRect(0, 0, W, H);
+      for (const p of patches) {
+        ctx.fillStyle = p.c;
+        ctx.beginPath();
+        ctx.ellipse(p.x, p.y, p.rx, p.ry, p.a, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
+      // ── Start screen ────────────────────────────────────────────────────
       if (state === 'start') {
         ctx.fillStyle = 'rgba(0,0,0,0.55)';
-        ctx.fillRect(0, 0, SIZE, SIZE);
-
-        const s = SIZE / 400;
+        ctx.fillRect(0, 0, W, H);
+        const sc = Math.min(W, H) / 400;
         ctx.textAlign = 'center';
-
-        ctx.font = `bold ${Math.round(38 * s)}px serif`;
+        ctx.font = `bold ${Math.round(36*sc)}px serif`;
         ctx.fillStyle = 'white';
-        ctx.fillText('🐕  Doggie Chase!', SIZE/2, SIZE * 0.30);
-
-        ctx.font = `${Math.round(18 * s)}px monospace`;
+        ctx.fillText('🐕  Doggie Chase!', W/2, H * 0.26);
+        ctx.font = `${Math.round(16*sc)}px monospace`;
         ctx.fillStyle = '#d4f0a0';
-        ctx.fillText('Run from the dog as long', SIZE/2, SIZE * 0.46);
-        ctx.fillText('as you can!', SIZE/2, SIZE * 0.54);
-
-        ctx.font = `${Math.round(15 * s)}px monospace`;
+        ctx.fillText('Run from the dog as long as you can!', W/2, H * 0.42);
+        ctx.font = `${Math.round(14*sc)}px monospace`;
+        ctx.fillStyle = '#aada8a';
+        ctx.fillText('Grab 🚲 and ⚡ for speed boosts', W/2, H * 0.52);
+        ctx.fillText('Hide behind 🌲 and 🪨 to lose the dog', W/2, H * 0.61);
+        ctx.font = `${Math.round(13*sc)}px monospace`;
         ctx.fillStyle = '#aaa';
-        ctx.fillText('Arrow keys / WASD / D-pad', SIZE/2, SIZE * 0.65);
-
-        ctx.font = `bold ${Math.round(17 * s)}px monospace`;
+        ctx.fillText('Arrow keys / WASD / D-pad', W/2, H * 0.73);
+        ctx.font = `bold ${Math.round(15*sc)}px monospace`;
         ctx.fillStyle = '#ffe066';
-        ctx.fillText('▶  Tap or press any key', SIZE/2, SIZE * 0.78);
+        ctx.fillText('▶  Tap or press any key', W/2, H * 0.84);
         return;
       }
 
-      // Paw prints
+      // ── Obstacles ────────────────────────────────────────────────────────
+      for (const o of obstacles) {
+        // Shadow circle behind emoji
+        ctx.fillStyle = 'rgba(0,0,0,0.18)';
+        ctx.beginPath();
+        ctx.arc(o.x + 3, o.y + 3, o.r, 0, Math.PI * 2);
+        ctx.fill();
+        drawEmoji(o.emoji, o.x, o.y, o.r * 2, false);
+      }
+
+      // ── Power-ups ─────────────────────────────────────────────────────────
+      const now = Date.now();
+      for (const pu of powerups) {
+        if (pu.gone) continue;
+        // Pulse ring
+        const pulse = 0.6 + 0.4 * Math.sin(now / 300);
+        ctx.strokeStyle = pu.color;
+        ctx.lineWidth   = 2;
+        ctx.globalAlpha = pulse * 0.8;
+        ctx.beginPath();
+        ctx.arc(pu.x, pu.y, EM * 0.72, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        drawEmoji(pu.emoji, pu.x, pu.y, EM * 1.05, false);
+      }
+
+      // ── Paw prints ───────────────────────────────────────────────────────
       for (const p of paws) {
-        ctx.globalAlpha = (1 - p.age / 50) * 0.45;
-        ctx.font = `${Math.round(EM * 0.38)}px serif`;
+        ctx.globalAlpha = (1 - p.age / 55) * 0.4;
+        ctx.font = `${Math.round(EM * 0.36)}px serif`;
         ctx.textAlign    = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('🐾', p.x, p.y);
       }
       ctx.globalAlpha = 1;
 
-      // Characters
-      emoji('🧒', boy.x, boy.y, EM, !boy.facingRight);
-      emoji('🐕', dog.x, dog.y, EM, !dog.facingRight);
+      // ── Boy ───────────────────────────────────────────────────────────────
+      const boosted = boy.boostEnd > now;
+      if (boosted) {
+        const remaining = (boy.boostEnd - now) / 1000;
+        // Glow ring
+        const glow = 0.5 + 0.5 * Math.sin(now / 120);
+        ctx.shadowColor = boy.boostColor;
+        ctx.shadowBlur  = 12 * glow + 6;
+        ctx.strokeStyle = boy.boostColor;
+        ctx.lineWidth   = 2.5;
+        ctx.globalAlpha = 0.8;
+        ctx.beginPath();
+        ctx.arc(boy.x, boy.y, EM * 0.65, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur  = 0;
+      }
+      drawEmoji('🧒', boy.x, boy.y, EM, !boy.facingRight);
 
-      // HUD — score
-      const s = SIZE / 400;
-      ctx.textAlign  = 'left';
-      ctx.font       = `bold ${Math.round(18 * s)}px monospace`;
+      // ── Dog ───────────────────────────────────────────────────────────────
+      drawEmoji('🐕', dog.x, dog.y, EM, !dog.facingRight);
+
+      // ── HUD ───────────────────────────────────────────────────────────────
+      const sc = Math.min(W, H) / 400;
       ctx.shadowColor = 'black';
-      ctx.shadowBlur  = 5;
+      ctx.shadowBlur  = 4;
+      ctx.font        = `bold ${Math.round(17*sc)}px monospace`;
       ctx.fillStyle   = 'white';
-      ctx.fillText(`⏱ ${score}s`, 10, 28 * s + 4);
+      ctx.textAlign   = 'left';
+      ctx.fillText(`⏱ ${score}s`, 10, 26*sc + 2);
       ctx.shadowBlur  = 0;
 
+      // Boost bar
+      if (boosted) {
+        const remaining  = (boy.boostEnd - now) / 1000;
+        const totalSecs  = boy.boostMult === 3 ? 3.5 : 6;
+        const frac       = Math.min(1, remaining / totalSecs);
+        const barW       = Math.min(160, W * 0.36);
+        const barX       = W - barW - 10;
+        const barY       = 10;
+        const barH       = Math.round(16 * sc);
+
+        ctx.fillStyle = 'rgba(0,0,0,0.45)';
+        ctx.beginPath(); ctx.roundRect(barX - 2, barY - 2, barW + 4, barH + 4, 4); ctx.fill();
+
+        ctx.fillStyle = boy.boostColor;
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath(); ctx.roundRect(barX, barY, barW * frac, barH, 3); ctx.fill();
+        ctx.globalAlpha = 1;
+
+        ctx.fillStyle   = 'white';
+        ctx.font        = `bold ${Math.round(12*sc)}px monospace`;
+        ctx.textAlign   = 'right';
+        ctx.shadowColor = 'black'; ctx.shadowBlur = 3;
+        ctx.fillText(`${boy.boostLabel} ${remaining.toFixed(1)}s`, barX + barW, barY + barH + Math.round(14*sc));
+        ctx.shadowBlur  = 0;
+      }
+
+      // ── Game over overlay ─────────────────────────────────────────────────
       if (state === 'over') {
         ctx.fillStyle = 'rgba(0,0,0,0.65)';
-        ctx.fillRect(0, 0, SIZE, SIZE);
+        ctx.fillRect(0, 0, W, H);
         ctx.textAlign = 'center';
 
-        ctx.font = `bold ${Math.round(46 * s)}px serif`;
-        ctx.fillStyle = '#ff6b6b';
+        ctx.font = `bold ${Math.round(44*sc)}px serif`;
+        ctx.fillStyle   = '#ff6b6b';
         ctx.shadowColor = 'black'; ctx.shadowBlur = 8;
-        ctx.fillText('🐕 CAUGHT!', SIZE/2, SIZE * 0.36);
-        ctx.shadowBlur = 0;
+        ctx.fillText('🐕 CAUGHT!', W/2, H * 0.35);
+        ctx.shadowBlur  = 0;
 
-        ctx.font = `${Math.round(20 * s)}px monospace`;
+        ctx.font = `${Math.round(20*sc)}px monospace`;
         ctx.fillStyle = 'white';
-        ctx.fillText(`Survived: ${score}s`, SIZE/2, SIZE * 0.50);
+        ctx.fillText(`Survived: ${score}s`, W/2, H * 0.50);
 
         if (score >= hiScore) {
-          ctx.font = `bold ${Math.round(18 * s)}px monospace`;
+          ctx.font = `bold ${Math.round(17*sc)}px monospace`;
           ctx.fillStyle = '#ffe066';
-          ctx.fillText('🏆 New Best!', SIZE/2, SIZE * 0.60);
+          ctx.fillText('🏆 New Best!', W/2, H * 0.60);
         }
 
-        ctx.font = `${Math.round(16 * s)}px monospace`;
+        ctx.font = `${Math.round(14*sc)}px monospace`;
         ctx.fillStyle = '#ccc';
-        ctx.fillText('Tap or press any key to retry', SIZE/2, SIZE * 0.73);
+        ctx.fillText('Tap or press any key to retry', W/2, H * 0.73);
       }
     }
 
-    function loop() {
-      update();
-      draw();
-      requestAnimationFrame(loop);
-    }
+    // ── Loop ────────────────────────────────────────────────────────────────
+    function loop() { update(); draw(); requestAnimationFrame(loop); }
 
-    // Keyboard
+    // ── Input ───────────────────────────────────────────────────────────────
     document.addEventListener('keydown', e => {
       if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
       keys[e.key] = true;
       if (state !== 'playing') init();
     });
     document.addEventListener('keyup', e => { keys[e.key] = false; });
+    canvas.addEventListener('click', () => { if (state !== 'playing') init(); });
 
-    // Canvas tap
-    canvas.addEventListener('click', () => {
-      if (state !== 'playing') init();
-    });
-
-    // D-pad
     document.querySelectorAll('.dpad button').forEach(btn => {
-      const dir = btn.className; // 'up' | 'down' | 'left' | 'right'
-
+      const dir = btn.className;
       const press   = e => { e.preventDefault(); keys[dir] = true;  btn.classList.add('pressed'); };
       const release = e => { e.preventDefault(); keys[dir] = false; btn.classList.remove('pressed'); if (state !== 'playing') init(); };
-
-      btn.addEventListener('touchstart', press,   { passive: false });
-      btn.addEventListener('touchend',   release, { passive: false });
-      btn.addEventListener('touchcancel',release, { passive: false });
-      btn.addEventListener('mousedown',  press);
-      btn.addEventListener('mouseup',    release);
-      btn.addEventListener('mouseleave', release);
+      btn.addEventListener('touchstart',  press,   { passive: false });
+      btn.addEventListener('touchend',    release, { passive: false });
+      btn.addEventListener('touchcancel', release, { passive: false });
+      btn.addEventListener('mousedown',   press);
+      btn.addEventListener('mouseup',     release);
+      btn.addEventListener('mouseleave',  release);
     });
 
     loop();
