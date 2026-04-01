@@ -8,7 +8,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #1a2e0a;
+      background: #0a0f1e;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -23,14 +23,15 @@
 
     .hiscore {
       font-size: 0.8rem;
-      color: #aada8a;
+      color: #7ec8e3;
       margin-bottom: 6px;
       letter-spacing: 0.05em;
     }
 
     #game {
-      border: 3px solid #5a8a3f;
+      border: 3px solid #2a7fb5;
       border-radius: 10px;
+      background: #0d3b5e;
       display: block;
       touch-action: none;
     }
@@ -109,7 +110,7 @@
       rx: 10 + Math.random() * 20,
       ry: 5  + Math.random() * 10,
       a:  Math.random() * Math.PI,
-      c:  `hsl(${95 + Math.random()*35}, ${45 + Math.random()*20}%, ${22 + Math.random()*14}%)`
+      c:  `hsl(${200 + Math.random()*25}, ${45 + Math.random()*20}%, ${18 + Math.random()*12}%)`
     }));
 
     // ── Obstacle generation ─────────────────────────────────────────────────
@@ -306,7 +307,7 @@
     // ── draw ────────────────────────────────────────────────────────────────
     function draw() {
       // Background
-      ctx.fillStyle = '#3d6e2c';
+      ctx.fillStyle = '#0d3b5e';
       ctx.fillRect(0, 0, W, H);
       for (const p of patches) {
         ctx.fillStyle = p.c;
@@ -325,10 +326,10 @@
         ctx.fillStyle = 'white';
         ctx.fillText('🐕  Doggie Chase!', W/2, H * 0.26);
         ctx.font = `${Math.round(16*sc)}px monospace`;
-        ctx.fillStyle = '#d4f0a0';
+        ctx.fillStyle = '#c8e8ff';
         ctx.fillText('Run from the dog as long as you can!', W/2, H * 0.42);
         ctx.font = `${Math.round(14*sc)}px monospace`;
-        ctx.fillStyle = '#aada8a';
+        ctx.fillStyle = '#7ec8e3';
         ctx.fillText('Grab 🚲 and ⚡ for speed boosts', W/2, H * 0.52);
         ctx.fillText('Hide behind 🌲 and 🪨 to lose the dog', W/2, H * 0.61);
         ctx.font = `${Math.round(13*sc)}px monospace`;
