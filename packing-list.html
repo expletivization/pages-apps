@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Packing List</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f0;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 0.875rem;
+      color: #888;
+      margin-bottom: 24px;
+    }
+
+    .add-form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .add-form input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 1rem;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+    }
+
+    .add-form input:focus {
+      border-color: #4a90d9;
+    }
+
+    .add-form button {
+      padding: 12px 18px;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.25rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      line-height: 1;
+    }
+
+    .add-form button:active {
+      transform: scale(0.95);
+    }
+
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 8px;
+      padding-left: 4px;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1.5px solid transparent;
+      transition: border-color 0.15s, opacity 0.15s;
+    }
+
+    .item:first-child { border-radius: 12px 12px 4px 4px; }
+    .item:last-child  { border-radius: 4px 4px 12px 12px; }
+    .item:only-child  { border-radius: 12px; }
+
+    .item.packed {
+      opacity: 0.5;
+    }
+
+    .item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #1a1a1a;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .item-label {
+      flex: 1;
+      font-size: 1rem;
+      cursor: pointer;
+      word-break: break-word;
+    }
+
+    .item.packed .item-label {
+      text-decoration: line-through;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #ccc;
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      line-height: 1;
+      transition: color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .delete-btn:hover { color: #e05252; }
+
+    .empty {
+      text-align: center;
+      color: #bbb;
+      font-size: 0.9rem;
+      padding: 32px 0;
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .footer-actions button {
+      flex: 1;
+      padding: 10px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      border: 1.5px solid #e0e0e0;
+      background: #fff;
+      border-radius: 10px;
+      cursor: pointer;
+      color: #666;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .footer-actions button:hover { border-color: #bbb; color: #333; }
+    .footer-actions button.danger:hover { border-color: #e05252; color: #e05252; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Packing List</h1>
+    <div class="subtitle" id="subtitle">0 items</div>
+
+    <form class="add-form" id="addForm">
+      <input type="text" id="itemInput" placeholder="Add an item…" autocomplete="off" autocorrect="off">
+      <button type="submit">+</button>
+    </form>
+
+    <div id="unpacked-section" class="section" style="display:none">
+      <div class="section-label">To pack</div>
+      <div class="list" id="unpackedList"></div>
+    </div>
+
+    <div id="packed-section" class="section" style="display:none">
+      <div class="section-label">Packed</div>
+      <div class="list" id="packedList"></div>
+    </div>
+
+    <div id="emptyState" class="empty">No items yet — add something above</div>
+
+    <div class="footer-actions" id="footerActions" style="display:none">
+      <button id="uncheckAll">Uncheck all</button>
+      <button id="clearPacked" class="danger">Remove packed</button>
+      <button id="clearAll" class="danger">Clear all</button>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'packing-list-v1';
+
+    let items = load();
+
+    function load() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch { return []; }
+    }
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+
+    function render() {
+      const unpacked = items.filter(i => !i.packed);
+      const packed   = items.filter(i =>  i.packed);
+
+      const unpackedList = document.getElementById('unpackedList');
+      const packedList   = document.getElementById('packedList');
+
+      unpackedList.innerHTML = '';
+      packedList.innerHTML   = '';
+
+      unpacked.forEach(item => unpackedList.appendChild(makeRow(item)));
+      packed.forEach(item   => packedList.appendChild(makeRow(item)));
+
+      document.getElementById('unpacked-section').style.display = unpacked.length ? '' : 'none';
+      document.getElementById('packed-section').style.display   = packed.length   ? '' : 'none';
+      document.getElementById('emptyState').style.display       = items.length    ? 'none' : '';
+      document.getElementById('footerActions').style.display    = items.length    ? '' : 'none';
+
+      const total  = items.length;
+      const nPacked = packed.length;
+      document.getElementById('subtitle').textContent =
+        total === 0 ? '0 items' :
+        nPacked === total ? `All ${total} packed` :
+        `${nPacked} of ${total} packed`;
+    }
+
+    function makeRow(item) {
+      const div = document.createElement('div');
+      div.className = 'item' + (item.packed ? ' packed' : '');
+
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = item.packed;
+      cb.addEventListener('change', () => {
+        const found = items.find(i => i.id === item.id);
+        if (found) { found.packed = cb.checked; save(); render(); }
+      });
+
+      const label = document.createElement('span');
+      label.className = 'item-label';
+      label.textContent = item.text;
+      label.addEventListener('click', () => { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); });
+
+      const del = document.createElement('button');
+      del.className = 'delete-btn';
+      del.textContent = '×';
+      del.title = 'Remove';
+      del.addEventListener('click', () => {
+        items = items.filter(i => i.id !== item.id);
+        save(); render();
+      });
+
+      div.appendChild(cb);
+      div.appendChild(label);
+      div.appendChild(del);
+      return div;
+    }
+
+    document.getElementById('addForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const input = document.getElementById('itemInput');
+      const text = input.value.trim();
+      if (!text) return;
+      items.push({ id: Date.now() + Math.random(), text, packed: false });
+      save(); render();
+      input.value = '';
+      input.focus();
+    });
+
+    document.getElementById('uncheckAll').addEventListener('click', () => {
+      items.forEach(i => i.packed = false);
+      save(); render();
+    });
+
+    document.getElementById('clearPacked').addEventListener('click', () => {
+      items = items.filter(i => !i.packed);
+      save(); render();
+    });
+
+    document.getElementById('clearAll').addEventListener('click', () => {
+      if (confirm('Clear everything?')) { items = []; save(); render(); }
+    });
+
+    render();
+  </script>
+</body>
+</html>
