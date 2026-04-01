@@ -4,64 +4,152 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Airstream Checklist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600&family=Lato:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #eee8da;
-      min-height: 100vh;
-      padding: 16px 16px 48px;
-      color: #1a1a1a;
+    :root {
+      --green:        #1a3d2b;
+      --green-light:  #255438;
+      --amber:        #c4762a;
+      --amber-light:  #e08830;
+      --parchment:    #e8e0cc;
+      --cream:        #faf7f0;
+      --text:         #2a2420;
+      --text-muted:   #9a8e80;
     }
 
+    body {
+      font-family: 'Lato', sans-serif;
+      background: var(--parchment);
+      background-image: radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px);
+      background-size: 22px 22px;
+      min-height: 100vh;
+      padding: 0 16px 64px;
+      color: var(--text);
+    }
+
+    /* ── HERO HEADER ── */
     header {
-      text-align: center;
-      padding: 28px 0 32px;
+      background: var(--green);
+      margin: 0 -16px 36px;
+      padding: 28px 24px 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        -45deg,
+        transparent, transparent 18px,
+        rgba(255,255,255,0.025) 18px, rgba(255,255,255,0.025) 19px
+      );
+      pointer-events: none;
+    }
+
+    /* Amber accent stripe at bottom */
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--amber), var(--amber-light), var(--amber), transparent);
+    }
+
+    .header-inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     header h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: #1a3d2b;
-      letter-spacing: -0.5px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.2rem;
+      color: white;
+      letter-spacing: 5px;
+      line-height: 1;
+      text-align: center;
     }
 
-    header p {
-      color: #7a6e5f;
-      font-size: 0.85rem;
-      margin-top: 5px;
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 100px;
+      padding: 5px 18px;
     }
 
+    .header-badge span {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.68rem;
+      letter-spacing: 2.5px;
+      color: rgba(255,255,255,0.55);
+      text-transform: uppercase;
+    }
+
+    .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--amber); flex-shrink: 0; }
+
+    /* ── SECTIONS ── */
     .sections {
       max-width: 580px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 22px;
     }
 
     .section {
-      background: #fff;
-      border-radius: 14px;
+      background: var(--cream);
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.09);
+      box-shadow: 0 2px 14px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
     }
 
+    /* Brushed aluminum section header */
     .section-header {
-      background: #1a3d2b;
-      color: white;
-      padding: 14px 16px;
+      background: linear-gradient(
+        180deg,
+        #ebebeb 0%, #d2d2d2 20%, #e8e8e8 45%, #cacaca 75%, #d8d8d8 100%
+      );
+      border-bottom: 2px solid #b0b0b0;
+      padding: 11px 22px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
+      position: relative;
     }
 
+    /* Rivets */
+    .section-header::before,
+    .section-header::after {
+      content: '';
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffffff, #909090);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .section-header::before { left: 8px; }
+    .section-header::after  { right: 8px; }
+
     .section-title {
-      font-size: 0.95rem;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
       font-weight: 600;
-      letter-spacing: 0.2px;
+      color: var(--green);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
     }
 
     .section-meta {
@@ -72,81 +160,67 @@
     }
 
     .section-progress {
-      font-size: 0.8rem;
-      opacity: 0.75;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.82rem;
+      color: #777;
       font-variant-numeric: tabular-nums;
     }
 
     .btn-uncheck {
-      background: rgba(255,255,255,0.15);
-      border: none;
-      color: white;
-      font-size: 0.72rem;
-      padding: 4px 9px;
-      border-radius: 6px;
+      background: rgba(26,61,43,0.1);
+      border: 1px solid rgba(26,61,43,0.22);
+      color: var(--green);
+      font-family: 'Lato', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 4px;
       cursor: pointer;
-      letter-spacing: 0.2px;
+      transition: background 0.15s;
     }
+    .btn-uncheck:hover { background: rgba(26,61,43,0.18); }
 
-    .btn-uncheck:hover {
-      background: rgba(255,255,255,0.27);
-    }
-
-    .progress-track {
-      height: 3px;
-      background: #e0dbd0;
-    }
-
+    .progress-track { height: 4px; background: #e0dbd0; }
     .progress-fill {
       height: 100%;
-      background: #4caf82;
-      transition: width 0.25s ease;
+      background: linear-gradient(90deg, var(--green), #3d9e6e);
+      transition: width 0.3s ease;
     }
 
-    .items-list {
-      padding: 4px 0;
-    }
+    /* ── ITEMS ── */
+    .items-list { padding: 2px 0; }
 
     .item {
       display: flex;
       align-items: center;
-      padding: 9px 14px 9px 16px;
-      gap: 11px;
-      border-bottom: 1px solid #f2f0eb;
+      padding: 10px 14px 10px 16px;
+      gap: 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
       transition: background 0.1s;
     }
-
-    .item:last-child {
-      border-bottom: none;
-    }
-
-    .item:hover {
-      background: #faf9f6;
-    }
+    .item:last-child { border-bottom: none; }
+    .item:hover { background: rgba(0,0,0,0.018); }
 
     .check-box {
-      width: 20px;
-      height: 20px;
-      border: 2px solid #c8c2b6;
-      border-radius: 5px;
+      width: 22px; height: 22px;
+      border: 2px solid #c0bab0;
+      border-radius: 50%;
       cursor: pointer;
       flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.15s, border-color 0.15s;
+      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
     }
-
     .check-box.checked {
-      background: #4caf82;
-      border-color: #4caf82;
+      background: var(--green);
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(26,61,43,0.12);
     }
-
     .check-box.checked::after {
       content: '';
       display: block;
-      width: 5px;
-      height: 9px;
+      width: 5px; height: 9px;
       border: 2px solid white;
       border-top: none;
       border-left: none;
@@ -161,82 +235,78 @@
       transition: color 0.15s;
       user-select: none;
     }
-
-    .item-label.checked {
-      color: #b0a898;
-      text-decoration: line-through;
-    }
+    .item-label.checked { color: #b0a898; text-decoration: line-through; }
 
     .item-del {
       background: none;
       border: none;
       color: #d0cac0;
       cursor: pointer;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       padding: 3px 5px;
-      border-radius: 5px;
+      border-radius: 4px;
       line-height: 1;
       flex-shrink: 0;
       transition: color 0.15s, background 0.15s;
     }
+    .item-del:hover { color: #d9534f; background: #fdf0f0; }
 
-    .item-del:hover {
-      color: #d9534f;
-      background: #fdf0f0;
-    }
-
+    /* ── ADD ROW ── */
     .add-row {
       display: flex;
       gap: 8px;
       padding: 10px 14px 12px;
-      border-top: 1px solid #f2f0eb;
-      background: #faf9f6;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      background: rgba(0,0,0,0.02);
     }
 
     .add-input {
       flex: 1;
       border: 1.5px solid #ddd8ce;
-      border-radius: 8px;
+      border-radius: 7px;
       padding: 8px 11px;
       font-size: 0.88rem;
+      font-family: 'Lato', sans-serif;
       outline: none;
       background: white;
-      color: #1a1a1a;
+      color: var(--text);
       transition: border-color 0.15s, box-shadow 0.15s;
     }
-
-    .add-input::placeholder {
-      color: #bbb5a8;
-    }
-
+    .add-input::placeholder { color: #bbb5a8; }
     .add-input:focus {
-      border-color: #4caf82;
-      box-shadow: 0 0 0 3px rgba(76, 175, 130, 0.15);
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(26,61,43,0.1);
     }
 
     .btn-add {
-      background: #1a3d2b;
+      background: var(--green);
       color: white;
       border: none;
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 0.88rem;
+      border-radius: 7px;
+      padding: 8px 18px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
       cursor: pointer;
-      font-weight: 500;
-      transition: background 0.15s;
       white-space: nowrap;
+      transition: background 0.15s;
     }
-
-    .btn-add:hover {
-      background: #255438;
-    }
+    .btn-add:hover { background: var(--green-light); }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>Airstream Checklist</h1>
-  <p>Tap items to check them off. Changes save automatically.</p>
+  <div class="header-inner">
+
+    <h1>Airstream Checklist</h1>
+    <div class="header-badge">
+      <span>Tap to check off</span>
+      <div class="dot"></div>
+      <span>Auto-saves</span>
+    </div>
+  </div>
 </header>
 
 <div class="sections" id="app"></div>
@@ -307,24 +377,12 @@ const DEFAULTS = [
 const KEY = 'airstream-checklist-v3';
 
 function load() {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (e) {}
+  try { const raw = localStorage.getItem(KEY); if (raw) return JSON.parse(raw); } catch (e) {}
   return JSON.parse(JSON.stringify(DEFAULTS));
 }
-
-function save() {
-  localStorage.setItem(KEY, JSON.stringify(state));
-}
-
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-}
-
-function esc(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+function uid()  { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 let state = load();
 
@@ -335,12 +393,9 @@ function render() {
 }
 
 function buildSection(section) {
-  const total   = section.items.length;
-  const done    = section.items.filter(i => i.checked).length;
-  const pct     = total ? (done / total * 100).toFixed(1) : 0;
-
-  // Sort for display: unchecked first, checked sink to bottom
-  // Stable sort preserves original order within each group
+  const total  = section.items.length;
+  const done   = section.items.filter(i => i.checked).length;
+  const pct    = total ? (done / total * 100).toFixed(1) : 0;
   const sorted = [...section.items].sort((a, b) => a.checked - b.checked);
 
   const el = document.createElement('div');
@@ -372,10 +427,8 @@ function buildSection(section) {
 function itemHtml(sid, item) {
   return `
     <div class="item">
-      <div class="check-box ${item.checked ? 'checked' : ''}"
-           onclick="toggle('${sid}','${item.id}')"></div>
-      <span class="item-label ${item.checked ? 'checked' : ''}"
-            onclick="toggle('${sid}','${item.id}')">${esc(item.text)}</span>
+      <div class="check-box ${item.checked ? 'checked' : ''}" onclick="toggle('${sid}','${item.id}')"></div>
+      <span class="item-label ${item.checked ? 'checked' : ''}" onclick="toggle('${sid}','${item.id}')">${esc(item.text)}</span>
       <button class="item-del" onclick="del('${sid}','${item.id}')" title="Remove">&#x2715;</button>
     </div>`;
 }
@@ -384,15 +437,13 @@ function toggle(sid, iid) {
   const sec  = state.find(s => s.id === sid);
   const item = sec.items.find(i => i.id === iid);
   item.checked = !item.checked;
-  save();
-  render();
+  save(); render();
 }
 
 function del(sid, iid) {
   const sec = state.find(s => s.id === sid);
   sec.items = sec.items.filter(i => i.id !== iid);
-  save();
-  render();
+  save(); render();
 }
 
 function addItem(sid) {
@@ -400,15 +451,13 @@ function addItem(sid) {
   const text = inp.value.trim();
   if (!text) return;
   state.find(s => s.id === sid).items.push({ id: uid(), text, checked: false });
-  save();
-  render();
+  save(); render();
   document.getElementById('inp-' + sid).focus();
 }
 
 function uncheckAll(sid) {
   state.find(s => s.id === sid).items.forEach(i => i.checked = false);
-  save();
-  render();
+  save(); render();
 }
 
 render();
