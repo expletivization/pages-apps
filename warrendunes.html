@@ -88,6 +88,8 @@
   .slot .desc{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .slot .temp{font-family:"Space Mono",monospace;font-weight:700;font-size:18px}
   .slot .pop{font-family:"Space Mono",monospace;font-size:11px;color:var(--lake-2);text-align:right;display:block}
+  .day-foot{display:flex;align-items:center;gap:7px;padding:9px 16px;border-top:1px solid var(--line);background:linear-gradient(90deg,rgba(232,118,58,.12),rgba(232,118,58,.02));font-family:"Space Mono",monospace;font-size:12.5px;font-weight:700;color:var(--sun);letter-spacing:.02em}
+  .day-foot span{font-size:15px;font-weight:400}
   .fc-msg{background:var(--sand-card);border:1px dashed var(--line);border-radius:14px;padding:18px;color:var(--ink-soft)}
   .fc-msg a{color:var(--lake)}
 
@@ -116,6 +118,22 @@
   .notice ul{margin:.6em 0 0;padding-left:22px}
   .notice li{margin:.35em 0}
   .notice .kicker{font-weight:600;color:var(--ink)}
+
+  /* ---------- GOOD TO KNOW ---------- */
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:14px}
+  .info{background:var(--sand-card);border:1px solid var(--line);border-radius:14px;padding:15px 16px;box-shadow:var(--shadow)}
+  .info .ico{font-size:22px;line-height:1}
+  .info .label{font-family:"Space Mono",monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin:9px 0 3px}
+  .info .val{font-size:15px;color:var(--ink);line-height:1.45}
+  .info .val strong{font-weight:600}
+  .info .val a{color:var(--lake);text-decoration-thickness:1px;text-underline-offset:2px}
+
+  /* ---------- DOGS ---------- */
+  .dogs{background:#F1F7E9;border:1px solid #CADAB0;border-radius:18px;padding:20px 22px;box-shadow:var(--shadow)}
+  .dog-row{padding-top:14px;margin-top:14px;border-top:1px solid #D6E3C2}
+  .dog-row:first-child{padding-top:0;margin-top:0;border-top:none}
+  .dog-row .rl{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:17px;color:var(--grass)}
+  .dogs p{margin:.35em 0 0;font-size:15px}
 
   /* ---------- MEALS ---------- */
   .meal-day{margin:0 0 28px}
@@ -232,6 +250,87 @@
     <path fill="none" stroke="currentColor" stroke-width="2" d="M0,16 C180,28 360,28 540,14 C720,2 900,2 1080,16 C1260,28 1350,22 1440,14"/>
   </svg>
 
+  <!-- GOOD TO KNOW -->
+  <section id="info">
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <div>
+        <h2>Good to know</h2>
+        <p class="sec-note">The practical stuff for getting in and settled.</p>
+      </div>
+    </div>
+    <div class="info-grid">
+      <div class="info">
+        <div class="ico">📍</div>
+        <div class="label">Park address</div>
+        <div class="val">12032 Red Arrow Hwy, Sawyer, MI 49125<br>
+          <a href="https://www.google.com/maps/search/?api=1&amp;query=Warren+Dunes+State+Park+12032+Red+Arrow+Highway+Sawyer+MI" target="_blank" rel="noopener">Open in Maps →</a></div>
+      </div>
+      <div class="info">
+        <div class="ico">⏰</div>
+        <div class="label">Arrival &amp; departure</div>
+        <div class="val">Check-in <strong>3:00 PM</strong> · Check-out <strong>1:00 PM</strong></div>
+      </div>
+      <div class="info">
+        <div class="ico">🏪</div>
+        <div class="label">Camp store &amp; office</div>
+        <div class="val">Open <strong>8 AM – 10 PM</strong> daily</div>
+      </div>
+      <div class="info">
+        <div class="ico">🎫</div>
+        <div class="label">Recreation Passport</div>
+        <div class="val">Required per vehicle. Indiana plates need the non-resident pass — grab it right at the entrance booth on the way in.</div>
+      </div>
+      <div class="info">
+        <div class="ico">🔥</div>
+        <div class="label">Firewood</div>
+        <div class="val">Don't bring any from home (tree-pest rule). Buy certified heat-treated wood — it's sold at the campground.</div>
+      </div>
+      <div class="info">
+        <div class="ico">🌙</div>
+        <div class="label">House rules</div>
+        <div class="val">Quiet hours 10 PM – 6 AM · two vehicles per site · day guests out by 10 PM.</div>
+      </div>
+    </div>
+  </section>
+
+  <svg class="ridge" viewBox="0 0 1440 26" preserveAspectRatio="none" aria-hidden="true">
+    <path fill="none" stroke="currentColor" stroke-width="2" d="M0,18 C180,6 360,6 540,16 C720,26 900,26 1080,14 C1260,4 1350,10 1440,16"/>
+  </svg>
+
+  <!-- DOGS -->
+  <section id="dogs">
+    <div class="sec-head">
+      <span class="sec-num">04</span>
+      <div>
+        <h2>Dogs at the beach</h2>
+        <p class="sec-note">Every crew's bringing a dog — here's where they can roam and swim.</p>
+      </div>
+    </div>
+    <div class="dogs">
+      <div class="dog-row">
+        <div class="rl">🐾 Where they're welcome</div>
+        <p>Leashed dogs (6-foot max) are fine in the campground, on the trails, and on the boardwalks. Keep them off the main swim beach and the dunes.</p>
+      </div>
+      <div class="dog-row">
+        <div class="rl">🌊 Dog swimming</div>
+        <p>The dog beach runs north of the farthest beach parking lot, past the last swim buoy — about 2.5 miles of open shoreline where leashed dogs can wade and swim.</p>
+      </div>
+      <div class="dog-row">
+        <div class="rl">🥾 Getting there — not really a hike</div>
+        <p>It's roughly a 3-mile drive from the campground to the beach. Park at the far-north lot and walk north along the sand to the marked dog area. The steep ½–¾ mile dune climb with ~100 stairs is only the Weko Beach route, so skip that.</p>
+      </div>
+      <div class="dog-row">
+        <div class="rl">🎒 Bring along</div>
+        <p>Water and a bowl, plus booties or a plan for hot sand on paws. Never leave a dog in a parked car (park rule), and pack out all waste.</p>
+      </div>
+    </div>
+  </section>
+
+  <svg class="ridge" viewBox="0 0 1440 26" preserveAspectRatio="none" aria-hidden="true">
+    <path fill="none" stroke="currentColor" stroke-width="2" d="M0,16 C180,28 360,28 540,14 C720,2 900,2 1080,16 C1260,28 1350,22 1440,14"/>
+  </svg>
+
   <!-- NOTICE -->
   <section id="notice">
     <div class="notice">
@@ -253,7 +352,7 @@
   <!-- MEALS -->
   <section id="meals">
     <div class="sec-head">
-      <span class="sec-num">03</span>
+      <span class="sec-num">05</span>
       <div>
         <h2>Meal planning</h2>
         <p class="sec-note">One chart per meal, Friday dinner through Sunday lunch.</p>
@@ -347,13 +446,23 @@ const WMO = {
 };
 const code = c => WMO[c] || ["🌡️","—"];
 
+function fmtTime(iso){
+  if(!iso) return "";
+  const parts = iso.slice(11,16).split(":");
+  let h = parseInt(parts[0],10);
+  const m = parts[1];
+  const ap = h >= 12 ? "PM" : "AM";
+  h = h % 12; if(h === 0) h = 12;
+  return `${h}:${m} ${ap}`;
+}
+
 async function loadForecast(){
   const grid = document.getElementById("fcGrid");
   const meta = document.getElementById("fcMeta");
   const url = "https://api.open-meteo.com/v1/forecast"
     + "?latitude=41.911&longitude=-86.594"
     + "&hourly=temperature_2m,precipitation_probability,weather_code"
-    + "&daily=temperature_2m_max,temperature_2m_min"
+    + "&daily=temperature_2m_max,temperature_2m_min,sunset"
     + "&temperature_unit=fahrenheit&precipitation_unit=inch&timezone=America%2FDetroit"
     + "&start_date=2026-06-19&end_date=2026-06-22";
   try{
@@ -375,6 +484,7 @@ async function loadForecast(){
       const hi = (D && dailyIdx[day.date]!=null) ? Math.round(D.temperature_2m_max[dailyIdx[day.date]]) : null;
       const lo = (D && dailyIdx[day.date]!=null) ? Math.round(D.temperature_2m_min[dailyIdx[day.date]]) : null;
       const hilo = (hi!=null) ? `<b>${hi}°</b> / ${lo}°` : "";
+      const sunset = (D && D.sunset && dailyIdx[day.date]!=null) ? fmtTime(D.sunset[dailyIdx[day.date]]) : "";
 
       let slots = "";
       SLOTS.forEach(s => {
@@ -398,7 +508,7 @@ async function loadForecast(){
           <div class="day-top">
             <div><div class="day-dow">${day.dow}</div><div class="day-date">${day.label}</div></div>
             <div class="day-hilo">${hilo}</div>
-          </div>${slots}
+          </div>${slots}${sunset ? `<div class="day-foot"><span>🌇</span> Sunset ${sunset}</div>` : ""}
         </div>`;
     });
 
