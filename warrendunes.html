@@ -103,8 +103,6 @@
   .site h3{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:21px;margin:14px 0 2px;color:var(--ink)}
   .site .nights{font-family:"Space Mono",monospace;font-size:13px;color:var(--lake-2);margin:0 0 6px}
   .site p.tag{margin:8px 0 0;font-size:14px;color:var(--ink-soft)}
-  .site.daycamp{border-style:dashed;background:#F7EFDC}
-  .site.daycamp .marker{background:var(--sun)}
   .map{margin:18px 0 0;background:var(--sand-card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
   .map img{display:block;width:100%;max-width:690px;height:auto;margin:0 auto;border-radius:9px}
   .map figcaption{font-family:"Space Mono",monospace;font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:11px;line-height:1.4}
@@ -135,23 +133,19 @@
   .dog-row .rl{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:17px;color:var(--grass)}
   .dogs p{margin:.35em 0 0;font-size:15px}
 
-  /* ---------- MEALS ---------- */
-  .meal-day{margin:0 0 28px}
-  .meal-day:last-child{margin-bottom:0}
-  .day-label{display:flex;align-items:baseline;gap:11px;margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid var(--line)}
-  .day-label .day-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:25px;color:var(--lake);letter-spacing:-.01em;line-height:1}
-  .day-label .day-sub{font-family:"Space Mono",monospace;font-size:13px;color:var(--ink-soft)}
-  .meal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:16px}
-  .meal{background:var(--sand-card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
-  .meal-head{padding:11px 16px;color:#fff}
-  .meal-head .name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:20px;line-height:1}
-  .meal[data-day="Friday"]   .meal-head{background:var(--sun)}
-  .meal[data-day="Saturday"] .meal-head{background:var(--lake)}
-  .meal[data-day="Sunday"]   .meal-head{background:var(--grass)}
-  .m-row{display:flex;gap:12px;padding:11px 16px;border-top:1px solid var(--line);align-items:baseline}
-  .m-row .who{font-weight:600;font-size:14px;flex:0 0 42%;min-width:0}
-  .m-row .what{flex:1;font-size:14px;color:var(--ink)}
-  .m-row .what.tbd{color:#A89878;font-family:"Space Mono",monospace;font-size:12.5px;letter-spacing:.04em}
+  /* ---------- FOOD ---------- */
+  .food-intro{background:#EAF3F5;border:1px solid #BBD9E1;border-radius:16px;padding:16px 18px;box-shadow:var(--shadow);font-size:15.5px;line-height:1.5;margin-bottom:18px}
+  .food-intro b{color:var(--lake)}
+  .food-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(244px,1fr));gap:14px}
+  .food{background:var(--sand-card);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px;box-shadow:var(--shadow);position:relative}
+  .food .marker{position:absolute;top:-12px;left:18px;background:var(--grass);color:#fff;font-family:"Space Mono",monospace;font-weight:700;font-size:14px;padding:5px 11px;border-radius:8px;box-shadow:var(--shadow)}
+  .food h3{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:20px;margin:14px 0 9px;color:var(--ink)}
+  .food ul{margin:0;padding-left:18px}
+  .food li{font-size:14px;margin:.32em 0;line-height:1.42}
+  .food-notes{margin-top:16px;background:#FCEFD9;border:1px solid var(--sun);border-radius:14px;padding:15px 18px;box-shadow:var(--shadow)}
+  .food-notes h3{font-family:"Bricolage Grotesque",sans-serif;margin:0 0 7px;color:var(--sun);font-size:17px}
+  .food-notes ul{margin:0;padding-left:20px;font-size:14.5px}
+  .food-notes li{margin:.28em 0}
 
   /* ---------- FOOTER ---------- */
   footer{margin-top:40px;background:var(--lake);color:#cfe6ee;text-align:center;padding:30px 20px 34px}
@@ -223,8 +217,8 @@
       <div class="site">
         <span class="marker">Site 167</span>
         <h3>Lisa &amp; Brad</h3>
-        <p class="nights">Fri → Sun · 2 nights</p>
-        <p class="tag">Home base for the weekend.</p>
+        <p class="nights">Fri → Mon · 3 nights</p>
+        <p class="tag">Home base — Sunday night's now booked here too, so no shuffle over to 165.</p>
       </div>
       <div class="site">
         <span class="marker">Site 169</span>
@@ -232,17 +226,11 @@
         <p class="nights">Fri → Sun · 2 nights</p>
         <p class="tag">Next door down the loop.</p>
       </div>
-      <div class="site daycamp">
-        <span class="marker">Site 165</span>
-        <h3>Day hangout</h3>
-        <p class="nights">Reserved Sun → Mon</p>
-        <p class="tag">Lisa &amp; Brad's daytime spot for Sunday — likely no overnight stay.</p>
-      </div>
     </div>
     <figure class="map">
       <img src="https://raw.githubusercontent.com/expletivization/pages-apps/refs/heads/master/warren%20dunes%20map.png"
            alt="Mt. Randall Campground map showing numbered campsites" loading="lazy">
-      <figcaption>Mt. Randall Campground — our cluster sits along the south loop: 164, 165, 167 &amp; 169.</figcaption>
+      <figcaption>Mt. Randall Campground — our cluster sits along the south loop: 164, 167 &amp; 169.</figcaption>
     </figure>
   </section>
 
@@ -349,16 +337,18 @@
     <path fill="none" stroke="currentColor" stroke-width="2" d="M0,18 C180,6 360,6 540,16 C720,26 900,26 1080,14 C1260,4 1350,10 1440,16"/>
   </svg>
 
-  <!-- MEALS -->
-  <section id="meals">
+  <!-- FOOD -->
+  <section id="food">
     <div class="sec-head">
       <span class="sec-num">05</span>
       <div>
-        <h2>Meal planning</h2>
-        <p class="sec-note">One chart per meal, Friday dinner through Sunday lunch.</p>
+        <h2>Food plan</h2>
+        <p class="sec-note">Where the group text landed — loose, but it's a plan.</p>
       </div>
     </div>
-    <div class="meal-grid" id="mealGrid"></div>
+    <div class="food-intro" id="foodIntro"></div>
+    <div class="food-grid" id="foodGrid"></div>
+    <div class="food-notes" id="foodNotes"></div>
   </section>
 
 </main>
@@ -370,55 +360,54 @@
 
 <script>
 /* ============================================================
-   MEAL PLAN — edit this to update the charts.
-   • CREWS: the rows that appear inside every meal card.
-   • MEALS: one card per meal. Prefill a crew by adding it to
-     "bring", e.g.  bring:{ "Lisa & Brad":"burgers + buns" }
+   FOOD PLAN — edit these to update the digest.
+   The gist from the group text: dinners together, everyone
+   covers their own breakfast & lunch, Blackstone griddle shared.
    ============================================================ */
-const CREWS = ["Don & Theresa", "Lisa & Brad", "Kayla, Adam & Anthony"];
+const FOOD_PLAN = "The loose plan: <b>dinners together as a group</b>, and everyone covers their own <b>breakfast &amp; lunch</b>. Lisa &amp; Brad are bringing the Blackstone griddle for anyone who wants to cook on it.";
 
-const DAY_DATES = { "Friday":"June 19", "Saturday":"June 20", "Sunday":"June 21" };
-
-const MEALS = [
-  { day:"Friday",   name:"Dinner",    bring:{} },
-  { day:"Saturday", name:"Breakfast", bring:{} },
-  { day:"Saturday", name:"Lunch",     bring:{} },
-  { day:"Saturday", name:"Dinner",    bring:{} },
-  { day:"Sunday",   name:"Breakfast", bring:{} },
-  { day:"Sunday",   name:"Lunch",     bring:{} },
+const FOOD = [
+  { crew:"Brad & Lisa", site:"167", items:[
+    "Burgers &amp; hot dogs (one day)",
+    "Lots of salad kits + mac &amp; cheese",
+    "Maybe squash &amp; zucchini to grill",
+    "Finger foods for our own lunches (cheese, crackers, fruit)",
+    "Bringing the Blackstone griddle",
+  ]},
+  { crew:"Don & Theresa", site:"164", items:[
+    "Chili in the crock pot one day",
+    "A roast for the meat-eaters",
+    "Stuff for chicken &amp; noodles one day",
+    "Lamb chops / steaks to grill",
+    "Fridge already on-site; Don can do store runs",
+  ]},
+  { crew:"Kayla, Adam & Anthony", site:"169", items:[
+    "No room to pack food — planning to grab groceries / eat out",
+    "Brats or hot dogs work for them",
+  ]},
 ];
 
-(function renderMeals(){
-  const grid = document.getElementById("mealGrid");
+const FOOD_NOTES = [
+  "Pizza Friday night",
+  "Group grill Saturday night",
+  "Meijer about 15 min away for anything missing",
+];
 
-  // group meals by day, preserving the chronological order above
-  const order = [];
-  const byDay = {};
-  MEALS.forEach(m => {
-    if(!byDay[m.day]){ byDay[m.day] = []; order.push(m.day); }
-    byDay[m.day].push(m);
+(function renderFood(){
+  document.getElementById("foodIntro").innerHTML = FOOD_PLAN;
+
+  const grid = document.getElementById("foodGrid");
+  FOOD.forEach(c => {
+    const card = document.createElement("div");
+    card.className = "food";
+    const items = c.items.map(i => `<li>${i}</li>`).join("");
+    card.innerHTML = `<span class="marker">Site ${c.site}</span>` +
+                     `<h3>${c.crew}</h3><ul>${items}</ul>`;
+    grid.appendChild(card);
   });
 
-  order.forEach(day => {
-    const group = document.createElement("div");
-    group.className = "meal-day";
-    let cards = "";
-    byDay[day].forEach(m => {
-      let rows = "";
-      CREWS.forEach(c => {
-        const v = (m.bring && m.bring[c]) ? m.bring[c] : "";
-        rows += `<div class="m-row"><div class="who">${c}</div>` +
-                `<div class="what${v ? "" : " tbd"}">${v || "TBD"}</div></div>`;
-      });
-      cards += `<div class="meal" data-day="${m.day}">` +
-               `<div class="meal-head"><span class="name">${m.name}</span></div>${rows}</div>`;
-    });
-    group.innerHTML =
-      `<div class="day-label"><span class="day-name">${day}</span>` +
-      `<span class="day-sub">${DAY_DATES[day] || ""}</span></div>` +
-      `<div class="meal-grid">${cards}</div>`;
-    grid.appendChild(group);
-  });
+  document.getElementById("foodNotes").innerHTML =
+    `<h3>Ideas &amp; supplies</h3><ul>${FOOD_NOTES.map(n => `<li>${n}</li>`).join("")}</ul>`;
 })();
 
 /* ============================================================
