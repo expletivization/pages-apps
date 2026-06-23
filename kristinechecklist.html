@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kristine's Checklist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600&family=Lato:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:        #141414;
+      --ink:          #262626;
+      --charcoal:     #3a3a3a;
+      --steel:        #6e6e6e;
+      --silver:       #b8b8b8;
+      --smoke:        #e8e8e8;
+      --paper:        #f2f2f2;
+      --white:        #ffffff;
+      --text:         #1a1a1a;
+      --text-muted:   #9a9a9a;
+    }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: var(--paper);
+      background-image: radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px);
+      background-size: 22px 22px;
+      min-height: 100vh;
+      padding: 0 16px 64px;
+      color: var(--text);
+    }
+
+    /* ── HERO HEADER ── */
+    header {
+      background: var(--black);
+      margin: 0 -16px 36px;
+      padding: 28px 24px 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        -45deg,
+        transparent, transparent 18px,
+        rgba(255,255,255,0.03) 18px, rgba(255,255,255,0.03) 19px
+      );
+      pointer-events: none;
+    }
+
+    /* Silver accent stripe at bottom */
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--silver), var(--white), var(--silver), transparent);
+    }
+
+    .header-inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.2rem;
+      color: white;
+      letter-spacing: 5px;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 100px;
+      padding: 5px 18px;
+    }
+
+    .header-badge span {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.68rem;
+      letter-spacing: 2.5px;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+    }
+
+    .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--silver); flex-shrink: 0; }
+
+    /* ── SECTIONS ── */
+    .sections {
+      max-width: 580px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .section {
+      background: var(--white);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    /* Brushed aluminum section header */
+    .section-header {
+      background: linear-gradient(
+        180deg,
+        #ebebeb 0%, #d2d2d2 20%, #e8e8e8 45%, #cacaca 75%, #d8d8d8 100%
+      );
+      border-bottom: 2px solid #b0b0b0;
+      padding: 11px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      position: relative;
+    }
+
+    /* Rivets */
+    .section-header::before,
+    .section-header::after {
+      content: '';
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffffff, #909090);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .section-header::before { left: 8px; }
+    .section-header::after  { right: 8px; }
+
+    .section-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--black);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .section-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .section-progress {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.82rem;
+      color: #777;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .btn-uncheck {
+      background: rgba(20,20,20,0.08);
+      border: 1px solid rgba(20,20,20,0.25);
+      color: var(--black);
+      font-family: 'Lato', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-uncheck:hover { background: rgba(20,20,20,0.16); }
+
+    .progress-track { height: 4px; background: #e0e0e0; }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--black), #5a5a5a);
+      transition: width 0.3s ease;
+    }
+
+    /* ── ITEMS ── */
+    .items-list { padding: 2px 0; }
+
+    .item {
+      display: flex;
+      align-items: center;
+      padding: 10px 14px 10px 16px;
+      gap: 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      transition: background 0.1s;
+    }
+    .item:last-child { border-bottom: none; }
+    .item:hover { background: rgba(0,0,0,0.018); }
+
+    .check-box {
+      width: 22px; height: 22px;
+      border: 2px solid #bcbcbc;
+      border-radius: 50%;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+    .check-box.checked {
+      background: var(--black);
+      border-color: var(--black);
+      box-shadow: 0 0 0 3px rgba(20,20,20,0.12);
+    }
+    .check-box.checked::after {
+      content: '';
+      display: block;
+      width: 5px; height: 9px;
+      border: 2px solid white;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg) translateY(-1px);
+    }
+
+    .item-label {
+      flex: 1;
+      font-size: 0.93rem;
+      cursor: pointer;
+      line-height: 1.4;
+      transition: color 0.15s;
+      user-select: none;
+    }
+    .item-label.checked { color: #b3b3b3; text-decoration: line-through; }
+
+    .item-del {
+      background: none;
+      border: none;
+      color: #cccccc;
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 3px 5px;
+      border-radius: 4px;
+      line-height: 1;
+      flex-shrink: 0;
+      transition: color 0.15s, background 0.15s;
+    }
+    .item-del:hover { color: #d9534f; background: #fdf0f0; }
+
+    /* ── ADD ROW ── */
+    .add-row {
+      display: flex;
+      gap: 8px;
+      padding: 10px 14px 12px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      background: rgba(0,0,0,0.02);
+    }
+
+    .add-input {
+      flex: 1;
+      border: 1.5px solid #dcdcdc;
+      border-radius: 7px;
+      padding: 8px 11px;
+      font-size: 0.88rem;
+      font-family: 'Lato', sans-serif;
+      outline: none;
+      background: white;
+      color: var(--text);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .add-input::placeholder { color: #bdbdbd; }
+    .add-input:focus {
+      border-color: var(--black);
+      box-shadow: 0 0 0 3px rgba(20,20,20,0.1);
+    }
+
+    .btn-add {
+      background: var(--black);
+      color: white;
+      border: none;
+      border-radius: 7px;
+      padding: 8px 18px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .btn-add:hover { background: var(--ink); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1>Kristine's Checklist</h1>
+    <div class="header-badge">
+      <span>Tap to check off</span>
+      <div class="dot"></div>
+      <span>Auto-saves</span>
+    </div>
+  </div>
+</header>
+
+<div class="sections" id="app"></div>
+
+<script>
+const DEFAULTS = [
+  {
+    id: 'arrival',
+    title: 'Campsite Arrival',
+    items: [
+      { id: 'ar01', text: 'Level camper (use black curved block & blue stopper)',                  checked: false },
+      { id: 'ar02', text: 'Place yellow wheel blocks under tires',                                  checked: false },
+      { id: 'ar03', text: 'Unhook from car (use black circle block under jack in the front)',       checked: false },
+      { id: 'ar04', text: 'Put down stabilizers (use blue blocks)',                                 checked: false },
+      { id: 'ar05', text: 'Connect electrical / water / sewer',                                     checked: false },
+      { id: 'ar06', text: 'Setup Blackstone / rug / chairs / garbage (brick inside) / shoe rack / folding table / cooler', checked: false },
+      { id: 'ar07', text: 'Unlock cabinets',                                                        checked: false },
+      { id: 'ar08', text: 'Unlock & turn on fridge & put food inside',                              checked: false },
+      { id: 'ar09', text: 'Put in microwave plate',                                                 checked: false },
+      { id: 'ar10', text: 'Put up vases & picture above bed',                                        checked: false },
+      { id: 'ar11', text: 'Put up dining table',                                                     checked: false },
+      { id: 'ar12', text: 'Hang up bathroom shower shelves & over the door hanger',                  checked: false },
+      { id: 'ar13', text: 'Hang TV',                                                                 checked: false },
+    ]
+  },
+  {
+    id: 'departure',
+    title: 'Campsite Departure',
+    items: [
+      { id: 'dp01', text: 'Take down TV',                                                            checked: false },
+      { id: 'dp02', text: 'Take down shower shelves & over the door hanger',                         checked: false },
+      { id: 'dp03', text: 'Fold down dining table',                                                  checked: false },
+      { id: 'dp04', text: 'Unpack fridge to cooler & turn off',                                      checked: false },
+      { id: 'dp05', text: 'Lock cabinets & fridge',                                                  checked: false },
+      { id: 'dp06', text: 'Remove microwave plate',                                                  checked: false },
+      { id: 'dp07', text: 'Take down vases & picture above bed',                                      checked: false },
+      { id: 'dp08', text: 'Put away rug / chairs / garbage / shoe rack / folding table / cooler / Blackstone', checked: false },
+      { id: 'dp09', text: 'Put stabilizers up',                                                      checked: false },
+      { id: 'dp10', text: 'Unhook electrical / water / sewer',                                       checked: false },
+      { id: 'dp11', text: 'Hook up to car: sway bars / chains / brake cable / electrical',           checked: false },
+      { id: 'dp12', text: 'Take yellow blocks out from under tires & leveling blocks',               checked: false },
+    ]
+  }
+];
+
+const KEY = 'kristines-checklist-v1';
+
+function load() {
+  try { const raw = localStorage.getItem(KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+  return JSON.parse(JSON.stringify(DEFAULTS));
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+function uid()  { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+let state = load();
+
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  state.forEach(section => app.appendChild(buildSection(section)));
+}
+
+function buildSection(section) {
+  const total  = section.items.length;
+  const done   = section.items.filter(i => i.checked).length;
+  const pct    = total ? (done / total * 100).toFixed(1) : 0;
+  const sorted = [...section.items].sort((a, b) => a.checked - b.checked);
+
+  const el = document.createElement('div');
+  el.className = 'section';
+  el.innerHTML = `
+    <div class="section-header">
+      <span class="section-title">${esc(section.title)}</span>
+      <div class="section-meta">
+        <span class="section-progress">${done}/${total}</span>
+        <button class="btn-uncheck" onclick="uncheckAll('${section.id}')">Uncheck all</button>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" style="width:${pct}%"></div>
+    </div>
+    <div class="items-list">
+      ${sorted.map(item => itemHtml(section.id, item)).join('')}
+    </div>
+    <div class="add-row">
+      <input class="add-input" type="text" placeholder="Add item…"
+        id="inp-${section.id}"
+        onkeydown="if(event.key==='Enter') addItem('${section.id}')">
+      <button class="btn-add" onclick="addItem('${section.id}')">Add</button>
+    </div>
+  `;
+  return el;
+}
+
+function itemHtml(sid, item) {
+  return `
+    <div class="item">
+      <div class="check-box ${item.checked ? 'checked' : ''}" onclick="toggle('${sid}','${item.id}')"></div>
+      <span class="item-label ${item.checked ? 'checked' : ''}" onclick="toggle('${sid}','${item.id}')">${esc(item.text)}</span>
+      <button class="item-del" onclick="del('${sid}','${item.id}')" title="Remove">&#x2715;</button>
+    </div>`;
+}
+
+function toggle(sid, iid) {
+  const sec  = state.find(s => s.id === sid);
+  const item = sec.items.find(i => i.id === iid);
+  item.checked = !item.checked;
+  save(); render();
+}
+
+function del(sid, iid) {
+  const sec = state.find(s => s.id === sid);
+  sec.items = sec.items.filter(i => i.id !== iid);
+  save(); render();
+}
+
+function addItem(sid) {
+  const inp  = document.getElementById('inp-' + sid);
+  const text = inp.value.trim();
+  if (!text) return;
+  state.find(s => s.id === sid).items.push({ id: uid(), text, checked: false });
+  save(); render();
+  document.getElementById('inp-' + sid).focus();
+}
+
+function uncheckAll(sid) {
+  state.find(s => s.id === sid).items.forEach(i => i.checked = false);
+  save(); render();
+}
+
+render();
+</script>
+</body>
+</html>
